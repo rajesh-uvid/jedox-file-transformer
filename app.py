@@ -271,8 +271,8 @@ if uploaded_file:
             # Ensure we attach manual edits to at least one term so they are picked up in the loop.
             # We iterate over current search_terms to ensure coverage.
             for loc, val in st.session_state.manual_edits.items():
-                if loc not in replacement_map:
-                    replacement_map[loc] = {}
+                # OVERRIDE: If manual edit exists, discard any individual column replacements for this file
+                replacement_map[loc] = {}
 
                 # If there are search terms, associate with all of them to be safe
                 if search_terms:
