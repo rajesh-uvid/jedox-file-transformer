@@ -159,6 +159,10 @@ def process_zip_recursive(input_bytes, search_terms, replacement_map=None, prefi
                                     
                                 # Apply Replacement
                                 if replacement_val:
+                                    # DEBUG: Log replacement attempt
+                                    # with open("debug_log.txt", "a") as dbg:
+                                    #     dbg.write(f"Attempting replace in {full_location}: '{term}' -> '{replacement_val}'\n")
+                                    
                                     if replacement_val.startswith("MANUAL_EDIT_MARKER:"):
                                         text = replacement_val.replace("MANUAL_EDIT_MARKER:", "")
                                         file_modified = True
@@ -261,11 +265,17 @@ if uploaded_file:
             final_reps_flat = dict(zip(edited_df["MapKey"], edited_df["Replacement Word"]))
             
             for key, val in final_reps_flat.items():
-                if val and val.strip():
-                    loc, term = key.split("||")
-                    if loc not in replacement_map:
-                        replacement_map[loc] = {}
-                    replacement_map[loc][term] = val
+                # Ensure val is a string and not empty
+                if val is not None and str(val).strip():
+                    # Use rsplit to split on the LAST delimiter only, protecting against || in filenames
+                    parts = key.rsplit("||", 1)
+                    if len(parts) == 2:
+                        loc, term = parts
+                        if loc not in replacement_map:
+                            replacement_map[loc] = {}
+                        replacement_map[loc][term] = str(val).strip()
+
+            st.toast(f"Queued replacements for {len(replacement_map)} files.", icon="ℹ️")
             
             # 2. Gather replacements from Manual Edits
             # Ensure we attach manual edits to at least one term so they are picked up in the loop.
